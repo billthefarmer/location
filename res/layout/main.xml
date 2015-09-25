@@ -28,15 +28,26 @@
       android:id="@+id/location"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
+      android:layout_marginLeft="8dp"
+      android:layout_marginRight="8dp"
       android:layout_marginTop="8dp"
       android:textAppearance="?android:attr/textAppearanceLarge" />
 
-  <TextView
-      android:id="@+id/status"
+  <ScrollView
       android:layout_width="fill_parent"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="8dp"
-      android:textAppearance="?android:attr/textAppearanceLarge" />
+      android:layout_height="fill_parent"
+      android:layout_marginLeft="8dp"
+      android:layout_marginRight="8dp"
+      android:fillViewport="true">
+
+    <TextView
+	android:id="@+id/status"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:layout_marginTop="8dp"
+	android:textAppearance="?android:attr/textAppearanceLarge" />
+
+  </ScrollView>
 
 </LinearLayout>
 

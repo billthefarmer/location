@@ -23,6 +23,8 @@ public class Main extends Activity
     private LocationManager locationManager;
     private DateFormat dateFormat;
 
+    private float accuracy;
+
     // Called when the activity is first created.
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -52,6 +54,8 @@ public class Main extends Activity
     protected void onResume()
     {
 	super.onResume();
+
+	accuracy = 1000;
 
 	Location location =
 	    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -83,23 +87,27 @@ public class Main extends Activity
 	float  acc = location.getAccuracy();
 	long   tim = location.getTime();
 
-	String latString = Location.convert(lat, Location.FORMAT_SECONDS);
-	String lonString = Location.convert(lon, Location.FORMAT_SECONDS);
+	if (acc < accuracy)
+	{
+	    accuracy = acc;
 
-	String date = dateFormat.format(new Date(tim));
+	    String latString = Location.convert(lat, Location.FORMAT_SECONDS);
+	    String lonString = Location.convert(lon, Location.FORMAT_SECONDS);
 
-	String format = "Latitude: %s\nLongitude: %s\nAltitude: %1.2fm\n" +
-	    "Accuracy: %1.0fm\n\nTime: %s";
-	String text =
-	    String.format(format, latString, lonString, alt, acc, date);
+	    String date = dateFormat.format(new Date(tim));
 
-	if (locationView != null)
-	    locationView.setText(text);
+	    String format = "Latitude: %s\nLongitude: %s\nAltitude: %1.2fm\n" +
+		"Accuracy: %1.0fm\n\nTime: %s";
+	    String text =
+		String.format(format, latString, lonString, alt, acc, date);
+
+	    if (locationView != null)
+		locationView.setText(text);
+	}
     }
 
     private void showStatus(GpsStatus status)
     {
-
 	int used = 0;
 	int count = 0;
 
@@ -112,7 +120,8 @@ public class Main extends Activity
 		if (satellite.usedInFix())
 		    used++;
 
-		count++;
+		if (satellite.getSnr() > 0)
+		    count++;
 	    }
 	}
 
@@ -131,7 +140,8 @@ public class Main extends Activity
 	    {
 		float snr = satellite.getSnr();
 
-		text += String.format("%d: %1.0f\n", ++count, snr);
+		if (snr > 0)
+		    text += String.format("%d: %1.0f dB\n", ++count, snr);
 	    }
 
 	    if (statusView != null)
@@ -149,6 +159,8 @@ public class Main extends Activity
 	switch (id)
 	{
 	case R.id.start:
+	    accuracy = 1000;
+
 	    Location location =
 		locationManager
 		.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -177,9 +189,6 @@ public class Main extends Activity
     @Override
     public void onLocationChanged(Location location)
     {
-	// Called when a new location is found by the network location
-	// provider.
-
 	showLocation(location);
     }
 
