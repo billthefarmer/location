@@ -16,6 +16,9 @@ import android.widget.TextView;
 import java.text.DateFormat;
 import java.util.Date;
 
+import uk.me.jstott.jcoord.LatLng;
+import uk.me.jstott.jcoord.OSRef;
+
 public class Main extends Activity
     implements View.OnClickListener, LocationListener, GpsStatus.Listener
 {
@@ -92,7 +95,7 @@ public class Main extends Activity
     private void showLocation(Location location)
     {
 	double lat = location.getLatitude();
-	double lon = location.getLongitude();
+	double lng = location.getLongitude();
 	double alt = location.getAltitude();
 	float  acc = location.getAccuracy();
 	long   tim = location.getTime();
@@ -102,14 +105,23 @@ public class Main extends Activity
 	    accuracy = acc;
 
 	    String latString = Location.convert(lat, Location.FORMAT_SECONDS);
-	    String lonString = Location.convert(lon, Location.FORMAT_SECONDS);
+	    String lngString = Location.convert(lng, Location.FORMAT_SECONDS);
+
+	    LatLng coord = new LatLng(lat, lng);
+	    coord.toOSGB36();
+	    OSRef OSCoord = coord.toOSRef();
+	    double east = OSCoord.getEasting();
+	    double north = OSCoord.getNorthing();
+	    String OSString = OSCoord.toSixFigureString();
 
 	    String date = dateFormat.format(new Date(tim));
 
 	    String format = "Latitude: %s\nLongitude: %s\nAltitude: %1.2fm\n" +
+		"OSRef: %1.0f, %1.0f\nOSRef: %s\n" +
 		"Accuracy: %1.0fm\n\nTime: %s";
 	    String text =
-		String.format(format, latString, lonString, alt, acc, date);
+		String.format(format, latString, lngString, alt,
+			      east, north, OSString, acc, date);
 
 	    if (locationView != null)
 		locationView.setText(text);
