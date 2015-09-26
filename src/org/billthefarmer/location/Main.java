@@ -1,5 +1,6 @@
 package org.billthefarmer.location;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.location.Location;
 import android.location.GpsSatellite;
@@ -9,6 +10,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.text.DateFormat;
@@ -19,6 +21,7 @@ public class Main extends Activity
 {
     private TextView locationView;
     private TextView statusView;
+    private ImageView customView;
 
     private LocationManager locationManager;
     private DateFormat dateFormat;
@@ -46,6 +49,13 @@ public class Main extends Activity
 	// Acquire a reference to the system Location Manager
 	locationManager =
 	    (LocationManager)getSystemService(LOCATION_SERVICE);
+
+	// Add custom view to action bar
+
+	ActionBar actionBar = getActionBar();
+	actionBar.setCustomView(R.layout.custom);
+	actionBar.setDisplayShowCustomEnabled(true);
+	customView = (ImageView)actionBar.getCustomView();
 
 	dateFormat = DateFormat.getDateTimeInstance();
     }
@@ -171,17 +181,17 @@ public class Main extends Activity
 	    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
 						   5000, 0, this);
 	    locationManager.addGpsStatusListener(this);
+
+	    if (customView != null)
+		customView.setVisibility(View.VISIBLE);
 	    break;
 
 	case R.id.stop:
 	    locationManager.removeUpdates(this);
 	    locationManager.removeGpsStatusListener(this);
 
-	    if (locationView != null)
-		locationView.setText("");
-
-	    if (statusView != null)
-		statusView.setText("");
+	    if (customView != null)
+		customView.setVisibility(View.INVISIBLE);
 	    break;
 	}
     }
