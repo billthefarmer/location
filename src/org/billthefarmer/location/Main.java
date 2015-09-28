@@ -23,13 +23,14 @@ public class Main extends Activity
     implements View.OnClickListener, LocationListener, GpsStatus.Listener
 {
     private TextView locationView;
-    private TextView statusView;
-    private ImageView customView;
+    private StatusView statusView;
+    private ImageView imageView;
 
     private LocationManager locationManager;
     private DateFormat dateFormat;
 
     private float accuracy;
+    private boolean track;
 
     // Called when the activity is first created.
     @Override
@@ -46,8 +47,12 @@ public class Main extends Activity
 	if (v != null)
 	    v.setOnClickListener(this);
 
+	v = findViewById(R.id.track);
+	if (v != null)
+	    v.setOnClickListener(this);
+
 	locationView = (TextView)findViewById(R.id.location);
-	statusView = (TextView)findViewById(R.id.status);
+	statusView = (StatusView)findViewById(R.id.status);
 
 	// Acquire a reference to the system Location Manager
 	locationManager =
@@ -58,7 +63,7 @@ public class Main extends Activity
 	ActionBar actionBar = getActionBar();
 	actionBar.setCustomView(R.layout.custom);
 	actionBar.setDisplayShowCustomEnabled(true);
-	customView = (ImageView)actionBar.getCustomView();
+	imageView = (ImageView)actionBar.getCustomView();
 
 	dateFormat = DateFormat.getDateTimeInstance();
     }
@@ -100,7 +105,7 @@ public class Main extends Activity
 	float  acc = location.getAccuracy();
 	long   tim = location.getTime();
 
-	if (acc < accuracy)
+	if (track || acc < accuracy)
 	{
 	    accuracy = acc;
 
@@ -110,64 +115,35 @@ public class Main extends Activity
 	    LatLng coord = new LatLng(lat, lng);
 	    coord.toOSGB36();
 	    OSRef OSCoord = coord.toOSRef();
-	    double east = OSCoord.getEasting();
-	    double north = OSCoord.getNorthing();
-	    String OSString = OSCoord.toSixFigureString();
+
+	    double east;
+	    double north;
+	    String OSString;
+
+	    if (OSCoord.isValid())
+	    {
+		east = OSCoord.getEasting();
+		north = OSCoord.getNorthing();
+		OSString = OSCoord.toSixFigureString();
+	    }
+
+	    else
+	    {
+		east = 0;
+		north = 0;
+		OSString = "N/A";
+	    }
 
 	    String date = dateFormat.format(new Date(tim));
 
 	    String format = "Latitude: %s\nLongitude: %s\nAltitude: %1.2fm\n" +
-		"OSRef: %1.0f, %1.0f\nOSRef: %s\n" +
-		"Accuracy: %1.0fm\n\nTime: %s";
+		"Accuracy: %1.0fm\nOSRef: %1.0f, %1.0f\nOSRef: %s\nTime: %s";
 	    String text =
-		String.format(format, latString, lngString, alt,
-			      east, north, OSString, acc, date);
+		String.format(format, latString, lngString, alt, acc,
+			      east, north, OSString, date);
 
 	    if (locationView != null)
 		locationView.setText(text);
-	}
-    }
-
-    private void showStatus(GpsStatus status)
-    {
-	int used = 0;
-	int count = 0;
-
-	if (status != null)
-	{
-	    Iterable<GpsSatellite> satellites = status.getSatellites();
-
-	    for (GpsSatellite satellite: satellites)
-	    {
-		if (satellite.usedInFix())
-		    used++;
-
-		if (satellite.getSnr() > 0)
-		    count++;
-	    }
-	}
-
-	String format = "Satellites: %d from %d\n";
-	String text = String.format(format, used, count);
-
-	if (statusView != null)
-	    statusView.setText(text);
-
-	if (status != null)
-	{
-	    Iterable<GpsSatellite> satellites = status.getSatellites();
-
-	    count = 0;
-	    for (GpsSatellite satellite: satellites)
-	    {
-		float snr = satellite.getSnr();
-
-		if (snr > 0)
-		    text += String.format("%d: %1.0f dB\n", ++count, snr);
-	    }
-
-	    if (statusView != null)
-		statusView.setText(text);
 	}
     }
 
@@ -194,16 +170,20 @@ public class Main extends Activity
 						   5000, 0, this);
 	    locationManager.addGpsStatusListener(this);
 
-	    if (customView != null)
-		customView.setVisibility(View.VISIBLE);
+	    if (imageView != null)
+		imageView.setVisibility(View.VISIBLE);
 	    break;
 
 	case R.id.stop:
 	    locationManager.removeUpdates(this);
 	    locationManager.removeGpsStatusListener(this);
 
-	    if (customView != null)
-		customView.setVisibility(View.INVISIBLE);
+	    if (imageView != null)
+		imageView.setVisibility(View.INVISIBLE);
+	    break;
+
+	case R.id.track:
+	    track = !track;
 	    break;
 	}
     }
@@ -219,10 +199,16 @@ public class Main extends Activity
     {
 	GpsStatus status = null;
 
-	status = locationManager.getGpsStatus(status);
+	switch (event)
+	{
+	case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
+	    status = locationManager.getGpsStatus(null);
 
-	if (status != null)
-	    showStatus(status);
+	    if (statusView != null)
+		statusView.updateStatus(status);
+
+	    break;
+	}
     }
 
     @Override

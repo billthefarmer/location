@@ -272,4 +272,23 @@ public class OSRef
     {
         return northing;
     }
+
+
+    /** 
+     * Check within the OS grid
+     *
+     * @return whether valid
+     * @since ?
+     */
+    public boolean isValid()
+    {
+	// Some of this rectangle is in Ireland and Northern France,
+	// but good enough. This is from the back cover of an old OS
+	// map.
+	if ((easting >= 0) && (easting <= 700000) &&
+	    (northing >= 0) && (northing <= 13000000))
+	    return true;
+
+	return false;
+    }
 }

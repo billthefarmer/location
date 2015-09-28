@@ -4,9 +4,26 @@
 	      android:layout_width="fill_parent"
 	      android:layout_height="fill_parent">
 
+  <TextView
+      android:id="@+id/location"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginLeft="8dp"
+      android:layout_marginRight="8dp"
+      android:layout_marginTop="8dp"
+      android:textAppearance="?android:attr/textAppearanceLarge" />
+
+  <org.billthefarmer.location.StatusView
+      android:id="@+id/status"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginLeft="8dp"
+      android:layout_marginRight="8dp"
+      android:layout_marginTop="8dp" />
+
   <LinearLayout
       android:orientation="horizontal"
-      android:layout_width="wrap_content"
+      android:layout_width="fill_parent"
       android:layout_height="wrap_content"
       android:layout_marginTop="8dp">
     
@@ -22,32 +39,14 @@
 	android:layout_height="wrap_content"
 	android:text="@string/stop" />
 
+    <CheckBox
+	android:id="@+id/track"
+	android:gravity="center"
+	android:layout_gravity="center"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:text="@string/track" />
+
   </LinearLayout>
 
-  <TextView
-      android:id="@+id/location"
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content"
-      android:layout_marginLeft="8dp"
-      android:layout_marginRight="8dp"
-      android:layout_marginTop="8dp"
-      android:textAppearance="?android:attr/textAppearanceLarge" />
-
-  <ScrollView
-      android:layout_width="fill_parent"
-      android:layout_height="fill_parent"
-      android:layout_marginLeft="8dp"
-      android:layout_marginRight="8dp"
-      android:fillViewport="true">
-
-    <TextView
-	android:id="@+id/status"
-	android:layout_width="fill_parent"
-	android:layout_height="fill_parent"
-	android:layout_marginTop="8dp"
-	android:textAppearance="?android:attr/textAppearanceLarge" />
-
-  </ScrollView>
-
 </LinearLayout>
-
