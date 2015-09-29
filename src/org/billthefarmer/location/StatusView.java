@@ -24,8 +24,8 @@
 package org.billthefarmer.location;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
@@ -45,6 +45,10 @@ public class StatusView extends View
 
     private Paint paint;
 
+    private int red;
+    private int blue;
+    private int white;
+
     // StatusView
 
     public StatusView(Context context, AttributeSet attrs)
@@ -52,6 +56,12 @@ public class StatusView extends View
 	super(context, attrs);
 
 	paint = new Paint();
+
+	Resources resources = context.getResources();
+
+	red = resources.getColor(android.R.color.holo_red_dark);
+	blue = resources.getColor(android.R.color.holo_blue_bright);
+	white = resources.getColor(android.R.color.white);
     }
 
     @Override
@@ -90,7 +100,7 @@ public class StatusView extends View
 
 	float rectWidth = width / (maxPrn + 1);
 
-	paint.setColor(Color.WHITE);
+	paint.setColor(white);
 	canvas.drawLine(0, 1, width, 1, paint);
 
 	if (satellites != null)
@@ -101,10 +111,10 @@ public class StatusView extends View
 		float y = satellite.getSnr() / 36f * height;
 
 		if (satellite.usedInFix())
-		    paint.setColor(Color.GREEN);
+		    paint.setColor(blue);
 
 		else
-		    paint.setColor(Color.RED);
+		    paint.setColor(red);
 
 		canvas.drawRect(x + 1, -y, x + rectWidth - 1, 0, paint);
 	    }
