@@ -13,6 +13,15 @@
       android:layout_marginTop="8dp"
       android:textAppearance="?android:attr/textAppearanceLarge" />
 
+  <TextView
+      android:id="@+id/nmea"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginLeft="8dp"
+      android:layout_marginRight="8dp"
+      android:layout_marginTop="8dp"
+      android:textAppearance="?android:attr/textAppearanceLarge" />
+
   <org.billthefarmer.location.StatusView
       android:id="@+id/status"
       android:layout_width="fill_parent"

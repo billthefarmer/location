@@ -43,9 +43,11 @@ import uk.me.jstott.jcoord.LatLng;
 import uk.me.jstott.jcoord.OSRef;
 
 public class Main extends Activity
-    implements View.OnClickListener, LocationListener, GpsStatus.Listener
+    implements View.OnClickListener, LocationListener,
+	       GpsStatus.Listener, GpsStatus.NmeaListener
 {
     private TextView locationView;
+    private TextView nmeaView;
     private StatusView statusView;
     private ImageView imageView;
 
@@ -75,6 +77,7 @@ public class Main extends Activity
 	    v.setOnClickListener(this);
 
 	locationView = (TextView)findViewById(R.id.location);
+	nmeaView = (TextView)findViewById(R.id.nmea);
 	statusView = (StatusView)findViewById(R.id.status);
 
 	// Acquire a reference to the system Location Manager
@@ -106,6 +109,7 @@ public class Main extends Activity
 
 	locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
 					       5000, 0, this);
+	locationManager.addNmeaListener(this);
 	locationManager.addGpsStatusListener(this);
     }
 
@@ -117,6 +121,7 @@ public class Main extends Activity
 	super.onPause();
 
 	locationManager.removeUpdates(this);
+	locationManager.removeNmeaListener(this);
 	locationManager.removeGpsStatusListener(this);
     }
 
@@ -170,6 +175,16 @@ public class Main extends Activity
 	}
     }
 
+    private void showNmea(long timestamp, String nmea)
+    {
+	String date = dateFormat.format(new Date(timestamp));
+
+	String text = String.format("Time: %s %s", date, nmea);
+
+	if (nmeaView != null)
+	    nmeaView.setText(text);
+    }
+
     // On click
 
     @Override
@@ -191,6 +206,7 @@ public class Main extends Activity
 
 	    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
 						   5000, 0, this);
+	    locationManager.addNmeaListener(this);
 	    locationManager.addGpsStatusListener(this);
 
 	    if (imageView != null)
@@ -199,6 +215,7 @@ public class Main extends Activity
 
 	case R.id.stop:
 	    locationManager.removeUpdates(this);
+	    locationManager.removeNmeaListener(this);
 	    locationManager.removeGpsStatusListener(this);
 
 	    if (imageView != null)
@@ -215,6 +232,12 @@ public class Main extends Activity
     public void onLocationChanged(Location location)
     {
 	showLocation(location);
+    }
+
+    @Override
+    public void onNmeaReceived(long timestamp, String nmea)
+    {
+	// showNmea(timestamp, nmea);
     }
 
     @Override
