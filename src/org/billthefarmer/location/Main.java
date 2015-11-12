@@ -31,6 +31,7 @@ import android.location.GpsStatus;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -46,6 +47,8 @@ public class Main extends Activity
     implements View.OnClickListener, LocationListener,
 	       GpsStatus.Listener, GpsStatus.NmeaListener
 {
+    private static final String TAG = "Location";
+
     private TextView locationView;
     private TextView nmeaView;
     private StatusView statusView;
@@ -179,10 +182,9 @@ public class Main extends Activity
     {
 	String date = dateFormat.format(new Date(timestamp));
 
-	String text = String.format("Time: %s %s", date, nmea);
+	String text = String.format("%s %s", date, nmea);
 
-	if (nmeaView != null)
-	    nmeaView.setText(text);
+	Log.d(TAG, text);
     }
 
     // On click
@@ -237,7 +239,7 @@ public class Main extends Activity
     @Override
     public void onNmeaReceived(long timestamp, String nmea)
     {
-	// showNmea(timestamp, nmea);
+	showNmea(timestamp, nmea);
     }
 
     @Override
