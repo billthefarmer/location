@@ -37,6 +37,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -56,6 +58,8 @@ public class Main extends Activity
 
     private LocationManager locationManager;
     private DateFormat dateFormat;
+
+    private FileOutputStream os;
 
     private float accuracy;
     private boolean track;
@@ -185,6 +189,14 @@ public class Main extends Activity
 	String text = String.format("%s %s", date, nmea);
 
 	Log.d(TAG, text);
+
+	try
+	{
+	    if (os != null)
+		os.write(nmea.getBytes());
+	}
+
+	catch (Exception e){}
     }
 
     // On click
@@ -213,6 +225,17 @@ public class Main extends Activity
 
 	    if (imageView != null)
 		imageView.setVisibility(View.VISIBLE);
+
+	    try
+	    {
+		if (os == null)
+		{
+		    File file = new File(getExternalFilesDir(null), "Nmea.txt");
+		    os = new FileOutputStream(file);
+		}
+	    }
+
+	    catch (Exception e){}
 	    break;
 
 	case R.id.stop:
@@ -222,6 +245,17 @@ public class Main extends Activity
 
 	    if (imageView != null)
 		imageView.setVisibility(View.INVISIBLE);
+
+	    try
+	    {
+		if (os != null)
+		{
+		    os.close();
+		    os = null;
+		}
+	    }
+
+	    catch (Exception e){}
 	    break;
 
 	case R.id.track:
