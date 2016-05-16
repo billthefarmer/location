@@ -52,7 +52,6 @@ public class Main extends Activity
     private static final String TAG = "Location";
 
     private TextView locationView;
-    private TextView nmeaView;
     private StatusView statusView;
     private ImageView imageView;
 
@@ -84,7 +83,6 @@ public class Main extends Activity
 	    v.setOnClickListener(this);
 
 	locationView = (TextView)findViewById(R.id.location);
-	nmeaView = (TextView)findViewById(R.id.nmea);
 	statusView = (StatusView)findViewById(R.id.status);
 
 	// Acquire a reference to the system Location Manager
@@ -164,8 +162,8 @@ public class Main extends Activity
 
 	    else
 	    {
-		east = 0;
-		north = 0;
+		east = Float.NaN;
+		north = Float.NaN;
 		OSString = "N/A";
 	    }
 
@@ -184,12 +182,6 @@ public class Main extends Activity
 
     private void showNmea(long timestamp, String nmea)
     {
-	String date = dateFormat.format(new Date(timestamp));
-
-	String text = String.format("%s %s", date, nmea);
-
-	Log.d(TAG, text);
-
 	try
 	{
 	    if (os != null)
