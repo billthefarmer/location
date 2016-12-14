@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import uk.me.jstott.jcoord.LatLng;
 import uk.me.jstott.jcoord.OSRef;
@@ -172,8 +173,8 @@ public class Main extends Activity
 	    String format = "Latitude: %s\nLongitude: %s\nAltitude: %1.2fm\n" +
 		"Accuracy: %1.0fm\nOSRef: %1.0f, %1.0f\nOSRef: %s\nTime: %s";
 	    String text =
-		String.format(format, latString, lngString, alt, acc,
-			      east, north, OSString, date);
+		String.format(Locale.getDefault(), format, latString, lngString,
+			      alt, acc, east, north, OSString, date);
 
 	    if (locationView != null)
 		locationView.setText(text);
