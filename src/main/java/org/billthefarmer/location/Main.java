@@ -25,6 +25,8 @@ package org.billthefarmer.location;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
@@ -37,10 +39,22 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.api.IMapController;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Overlay;
+// import org.osmdroid.views.overlay.compass.CompassOverlay;
+// import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
+import org.osmdroid.views.overlay.MinimapOverlay;
+import org.osmdroid.views.overlay.mylocation.SimpleLocationOverlay;
+import org.osmdroid.views.overlay.ScaleBarOverlay;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import uk.me.jstott.jcoord.LatLng;
@@ -55,15 +69,22 @@ public class Main extends Activity
     private TextView locationView;
     private StatusView statusView;
     private ImageView imageView;
+    private MapView map;
 
     private LocationManager locationManager;
     private DateFormat dateFormat;
 
     private FileOutputStream os;
 
+    private SimpleLocationOverlay simpleLocation;
+    private List<Overlay> overlayList;
+
     private float accuracy;
     private boolean track;
 
+    private boolean located;
+    private boolean zoomed;
+    
     // Called when the activity is first created.
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -72,6 +93,10 @@ public class Main extends Activity
         setContentView(R.layout.main);
 
 	View v = findViewById(R.id.start);
+	if (v != null)
+	    v.setOnClickListener(this);
+
+	v = findViewById(R.id.open);
 	if (v != null)
 	    v.setOnClickListener(this);
 
@@ -85,6 +110,34 @@ public class Main extends Activity
 
 	locationView = (TextView)findViewById(R.id.location);
 	statusView = (StatusView)findViewById(R.id.status);
+
+	org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants
+	    .setUserAgentValue(BuildConfig.APPLICATION_ID);
+
+        map = (MapView)findViewById(R.id.map);
+	if (map != null)
+	{
+	    map.setTileSource(TileSourceFactory.MAPNIK);
+	    map.setBuiltInZoomControls(true);
+	    map.setMultiTouchControls(true);
+	    overlayList = map.getOverlays();
+
+	    ScaleBarOverlay scale = new ScaleBarOverlay(map);
+	    scale.setAlignBottom(true);
+	    scale.setAlignRight(false);
+	    overlayList.add(scale);
+
+	    MinimapOverlay miniMap =
+		new MinimapOverlay(this, map.getTileRequestCompleteHandler());
+	    miniMap.setZoomDifference(4);
+	    overlayList.add(miniMap);
+
+	    // InternalCompassOrientationProvider provider =
+	    // 	new InternalCompassOrientationProvider(this);
+	    // CompassOverlay compass =
+	    // 	new CompassOverlay(this, provider, map);
+	    // overlayList.add(compass);
+	}
 
 	// Acquire a reference to the system Location Manager
 	locationManager =
@@ -139,9 +192,33 @@ public class Main extends Activity
 	float  acc = location.getAccuracy();
 	long   tim = location.getTime();
 
+	IMapController mapController = map.getController();
+	if (!zoomed)
+	{
+	    mapController.setZoom(14);
+	    zoomed = true;
+	}
+
 	if (track || acc < accuracy)
 	{
 	    accuracy = acc;
+
+	    GeoPoint point = new GeoPoint(location);
+	    if (!located)
+	    {
+		mapController.setCenter(point);
+		located = true;
+	    }
+
+	    if (simpleLocation == null)
+	    {
+		Bitmap bitmap = BitmapFactory
+		    .decodeResource(getResources(), R.drawable.marker_default);
+		simpleLocation = new SimpleLocationOverlay(bitmap);
+		overlayList.add(simpleLocation);
+	    }
+
+	    simpleLocation.setLocation(point);
 
 	    String latString = Location.convert(lat, Location.FORMAT_SECONDS);
 	    String lngString = Location.convert(lng, Location.FORMAT_SECONDS);
@@ -189,7 +266,7 @@ public class Main extends Activity
 		os.write(nmea.getBytes());
 	}
 
-	catch (Exception e){}
+	catch (Exception e) {}
     }
 
     // On click
@@ -203,6 +280,7 @@ public class Main extends Activity
 	{
 	case R.id.start:
 	    accuracy = 1000;
+	    located = false;
 
 	    Location location =
 		locationManager
@@ -218,7 +296,9 @@ public class Main extends Activity
 
 	    if (imageView != null)
 		imageView.setVisibility(View.VISIBLE);
+	    break;
 
+	case R.id.open:
 	    try
 	    {
 		if (os == null)
@@ -228,7 +308,7 @@ public class Main extends Activity
 		}
 	    }
 
-	    catch (Exception e){}
+	    catch (Exception e) {}
 	    break;
 
 	case R.id.stop:
@@ -248,7 +328,7 @@ public class Main extends Activity
 		}
 	    }
 
-	    catch (Exception e){}
+	    catch (Exception e) {}
 	    break;
 
 	case R.id.track:

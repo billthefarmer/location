@@ -1,6 +1,7 @@
 buildscript {
     repositories {
         jcenter()
+	mavenCentral()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.2.2'
@@ -8,6 +9,14 @@ buildscript {
 }
 
 apply plugin: 'com.android.application'
+
+repositories {
+     jcenter()
+}
+
+dependencies {
+    compile 'org.osmdroid:osmdroid-android:5.5:release@aar'
+}
 
 android {
     compileSdkVersion 'android-17'
