@@ -5,4 +5,8 @@
   <string name="open">Open</string>
   <string name="stop">Stop</string>
   <string name="track">Track</string>
+
+  <string name="copyright">
+    \u00A9 OpenStreetMap contributors
+  </string>
 </resources>

@@ -34,35 +34,32 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Overlay;
-// import org.osmdroid.views.overlay.compass.CompassOverlay;
-// import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
-import org.osmdroid.views.overlay.MinimapOverlay;
 import org.osmdroid.views.overlay.mylocation.SimpleLocationOverlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 import uk.me.jstott.jcoord.LatLng;
 import uk.me.jstott.jcoord.OSRef;
 
 public class Main extends Activity
-    implements View.OnClickListener, LocationListener,
-	       GpsStatus.Listener, GpsStatus.NmeaListener
+    implements LocationListener, GpsStatus.Listener
 {
     private static final String TAG = "Location";
 
@@ -74,10 +71,7 @@ public class Main extends Activity
     private LocationManager locationManager;
     private DateFormat dateFormat;
 
-    private FileOutputStream os;
-
     private SimpleLocationOverlay simpleLocation;
-    private List<Overlay> overlayList;
 
     private float accuracy;
     private boolean track;
@@ -92,51 +86,39 @@ public class Main extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-	View v = findViewById(R.id.start);
-	if (v != null)
-	    v.setOnClickListener(this);
-
-	v = findViewById(R.id.open);
-	if (v != null)
-	    v.setOnClickListener(this);
-
-	v = findViewById(R.id.stop);
-	if (v != null)
-	    v.setOnClickListener(this);
-
-	v = findViewById(R.id.track);
-	if (v != null)
-	    v.setOnClickListener(this);
-
+	// Get the views
 	locationView = (TextView)findViewById(R.id.location);
 	statusView = (StatusView)findViewById(R.id.status);
 
+	// Set the user agent
 	org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants
 	    .setUserAgentValue(BuildConfig.APPLICATION_ID);
 
+	// Get the map
         map = (MapView)findViewById(R.id.map);
 	if (map != null)
 	{
+	    // Set up the map
 	    map.setTileSource(TileSourceFactory.MAPNIK);
 	    map.setBuiltInZoomControls(true);
 	    map.setMultiTouchControls(true);
-	    overlayList = map.getOverlays();
+
+	    List<Overlay> overlayList = map.getOverlays();
+
+	    // Add the overlays
+	    CopyrightOverlay copyright =
+		new CopyrightOverlay(this, R.string.copyright);
+	    overlayList.add(copyright);
 
 	    ScaleBarOverlay scale = new ScaleBarOverlay(map);
 	    scale.setAlignBottom(true);
-	    scale.setAlignRight(false);
+	    scale.setAlignRight(true);
 	    overlayList.add(scale);
 
-	    MinimapOverlay miniMap =
-		new MinimapOverlay(this, map.getTileRequestCompleteHandler());
-	    miniMap.setZoomDifference(4);
-	    overlayList.add(miniMap);
-
-	    // InternalCompassOrientationProvider provider =
-	    // 	new InternalCompassOrientationProvider(this);
-	    // CompassOverlay compass =
-	    // 	new CompassOverlay(this, provider, map);
-	    // overlayList.add(compass);
+	    Bitmap bitmap = BitmapFactory
+		.decodeResource(getResources(), R.drawable.marker_default);
+	    simpleLocation = new SimpleLocationOverlay(bitmap);
+	    overlayList.add(simpleLocation);
 	}
 
 	// Acquire a reference to the system Location Manager
@@ -144,7 +126,6 @@ public class Main extends Activity
 	    (LocationManager)getSystemService(LOCATION_SERVICE);
 
 	// Add custom view to action bar
-
 	ActionBar actionBar = getActionBar();
 	actionBar.setCustomView(R.layout.custom);
 	actionBar.setDisplayShowCustomEnabled(true);
@@ -152,6 +133,8 @@ public class Main extends Activity
 
 	dateFormat = DateFormat.getDateTimeInstance();
     }
+
+    // On resume
 
     @Override
     protected void onResume()
@@ -168,7 +151,6 @@ public class Main extends Activity
 
 	locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
 					       5000, 0, this);
-	locationManager.addNmeaListener(this);
 	locationManager.addGpsStatusListener(this);
     }
 
@@ -180,105 +162,34 @@ public class Main extends Activity
 	super.onPause();
 
 	locationManager.removeUpdates(this);
-	locationManager.removeNmeaListener(this);
 	locationManager.removeGpsStatusListener(this);
     }
 
-    private void showLocation(Location location)
-    {
-	double lat = location.getLatitude();
-	double lng = location.getLongitude();
-	double alt = location.getAltitude();
-	float  acc = location.getAccuracy();
-	long   tim = location.getTime();
-
-	IMapController mapController = map.getController();
-	if (!zoomed)
-	{
-	    mapController.setZoom(14);
-	    zoomed = true;
-	}
-
-	if (track || acc < accuracy)
-	{
-	    accuracy = acc;
-
-	    GeoPoint point = new GeoPoint(location);
-	    if (!located)
-	    {
-		mapController.setCenter(point);
-		located = true;
-	    }
-
-	    if (simpleLocation == null)
-	    {
-		Bitmap bitmap = BitmapFactory
-		    .decodeResource(getResources(), R.drawable.marker_default);
-		simpleLocation = new SimpleLocationOverlay(bitmap);
-		overlayList.add(simpleLocation);
-	    }
-
-	    simpleLocation.setLocation(point);
-
-	    String latString = Location.convert(lat, Location.FORMAT_SECONDS);
-	    String lngString = Location.convert(lng, Location.FORMAT_SECONDS);
-
-	    LatLng coord = new LatLng(lat, lng);
-	    coord.toOSGB36();
-	    OSRef OSCoord = coord.toOSRef();
-
-	    double east;
-	    double north;
-	    String OSString;
-
-	    if (OSCoord.isValid())
-	    {
-		east = OSCoord.getEasting();
-		north = OSCoord.getNorthing();
-		OSString = OSCoord.toSixFigureString();
-	    }
-
-	    else
-	    {
-		east = Float.NaN;
-		north = Float.NaN;
-		OSString = "N/A";
-	    }
-
-	    String date = dateFormat.format(new Date(tim));
-
-	    String format = "Latitude: %s\nLongitude: %s\nAltitude: %1.2fm\n" +
-		"Accuracy: %1.0fm\nOSRef: %1.0f, %1.0f\nOSRef: %s\nTime: %s";
-	    String text =
-		String.format(Locale.getDefault(), format, latString, lngString,
-			      alt, acc, east, north, OSString, date);
-
-	    if (locationView != null)
-		locationView.setText(text);
-	}
-    }
-
-    private void showNmea(long timestamp, String nmea)
-    {
-	try
-	{
-	    if (os != null)
-		os.write(nmea.getBytes());
-	}
-
-	catch (Exception e) {}
-    }
-
-    // On click
+    // On create options menu
 
     @Override
-    public void onClick(View v)
+    public boolean onCreateOptionsMenu(Menu menu)
     {
-	int id = v.getId();
+	// Inflate the menu; this adds items to the action bar if it
+	// is present.
 
+	MenuInflater inflater = getMenuInflater();
+	inflater.inflate(R.menu.main, menu);
+
+	return true;
+    }
+
+    // On options item selected
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+	// Get id
+
+	int id = item.getItemId();
 	switch (id)
 	{
-	case R.id.start:
+	case R.id.action_start:
 	    accuracy = 1000;
 	    located = false;
 
@@ -291,49 +202,105 @@ public class Main extends Activity
 
 	    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
 						   5000, 0, this);
-	    locationManager.addNmeaListener(this);
 	    locationManager.addGpsStatusListener(this);
 
 	    if (imageView != null)
 		imageView.setVisibility(View.VISIBLE);
 	    break;
 
-	case R.id.open:
-	    try
-	    {
-		if (os == null)
-		{
-		    File file = new File(getExternalFilesDir(null), "Nmea.txt");
-		    os = new FileOutputStream(file);
-		}
-	    }
-
-	    catch (Exception e) {}
-	    break;
-
-	case R.id.stop:
+	case R.id.action_stop:
 	    locationManager.removeUpdates(this);
-	    locationManager.removeNmeaListener(this);
 	    locationManager.removeGpsStatusListener(this);
 
 	    if (imageView != null)
 		imageView.setVisibility(View.INVISIBLE);
+	    break;
 
-	    try
+	case R.id.action_track:
+	    track = !track;
+	    if (track)
+		item.setIcon(R.drawable.ic_action_location_found);
+
+	    else
+		item.setIcon(R.drawable.ic_action_location_searching);
+	    break;
+
+	default:
+	    return false;
+	}
+
+	return true;
+    }
+
+    // Show location
+
+    private void showLocation(Location location)
+    {
+	IMapController mapController = map.getController();
+	if (!zoomed)
+	{
+	    mapController.setZoom(14);
+	    zoomed = true;
+	}
+
+	GeoPoint point = new GeoPoint(location);
+
+	if (!located)
+	{
+	    mapController.setCenter(point);
+	    located = true;
+	}
+
+	simpleLocation.setLocation(point);
+
+	float  acc = location.getAccuracy();
+
+	if (track || acc < accuracy)
+	{
+	    accuracy = acc;
+
+	    double lat = location.getLatitude();
+	    double lng = location.getLongitude();
+	    double alt = location.getAltitude();
+
+	    String latString = Location.convert(lat, Location.FORMAT_SECONDS);
+	    String lngString = Location.convert(lng, Location.FORMAT_SECONDS);
+
+	    long   tim = location.getTime();
+	    String date = dateFormat.format(new Date(tim));
+
+	    LatLng coord = new LatLng(lat, lng);
+	    coord.toOSGB36();
+	    OSRef OSCoord = coord.toOSRef();
+
+	    String text = "";
+
+	    if (OSCoord.isValid())
 	    {
-		if (os != null)
-		{
-		    os.close();
-		    os = null;
-		}
+		double east = OSCoord.getEasting();
+		double north = OSCoord.getNorthing();
+		String OSString = OSCoord.toSixFigureString();
+
+		String format =
+		    "Latitude: %s\nLongitude: %s\nAltitude: %1.2fm\n" +
+		    "Accuracy: %1.0fm\nOSRef: %1.0f, %1.0f\nOSRef: %s\n" +
+		    "Time: %s";
+		text = String.format(Locale.getDefault(), format, latString,
+				     lngString, alt, acc, east, north, OSString,
+				     date);
 	    }
 
-	    catch (Exception e) {}
-	    break;
+	    else
+	    {
+		String format =
+		    "Latitude: %s\nLongitude: %s\nAltitude: %1.2fm\n" +
+		    "Accuracy: %1.0fm\nTime: %s";
+		text = String.format(Locale.getDefault(), format, latString,
+				     lngString, alt, acc, date);
+	    }
 
-	case R.id.track:
-	    track = !track;
-	    break;
+	    if (locationView != null)
+		locationView.setText(text);
 	}
     }
 
@@ -341,12 +308,6 @@ public class Main extends Activity
     public void onLocationChanged(Location location)
     {
 	showLocation(location);
-    }
-
-    @Override
-    public void onNmeaReceived(long timestamp, String nmea)
-    {
-	showNmea(timestamp, nmea);
     }
 
     @Override

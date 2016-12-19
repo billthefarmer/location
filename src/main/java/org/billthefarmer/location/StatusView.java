@@ -32,6 +32,8 @@ import android.location.GpsStatus;
 import android.util.AttributeSet;
 import android.view.View;
 
+// StatusView class
+
 public class StatusView extends View
 {
     private GpsStatus status;
@@ -63,6 +65,8 @@ public class StatusView extends View
 	blue = resources.getColor(android.R.color.holo_blue_bright);
 	white = resources.getColor(android.R.color.white);
     }
+
+    // On measure
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)

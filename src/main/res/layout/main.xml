@@ -22,40 +22,6 @@
       android:layout_marginRight="8dp"
       android:layout_marginTop="8dp" />
 
-  <LinearLayout
-      android:orientation="horizontal"
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="8dp">
-
-    <Button
-	android:id="@+id/start"
-	android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
-	android:text="@string/start" />
-
-    <Button
-	android:id="@+id/open"
-	android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
-	android:text="@string/open" />
-
-    <Button
-	android:id="@+id/stop"
-	android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
-	android:text="@string/stop" />
-
-    <CheckBox
-	android:id="@+id/track"
-	android:gravity="center"
-	android:layout_gravity="center"
-	android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
-	android:text="@string/track" />
-
-  </LinearLayout>
-
   <org.osmdroid.views.MapView
       android:id="@+id/map"
       android:layout_width="fill_parent" 
