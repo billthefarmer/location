@@ -2,7 +2,6 @@
 <resources>
   <string name="app_name">Location</string>
   <string name="start">Start</string>
-  <string name="open">Open</string>
   <string name="stop">Stop</string>
   <string name="track">Track</string>
 
