@@ -6,6 +6,10 @@
   <string name="stop">Stop</string>
   <string name="track">Track</string>
 
+  <string name="location">
+    Latitude:\nLongitude:\nAltitude:\nAccuracy:\nTime:
+  </string>
+
   <string name="copyright">
     \u00A9 OpenStreetMap contributors
   </string>

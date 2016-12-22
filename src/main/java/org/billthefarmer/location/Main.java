@@ -109,6 +109,8 @@ public class Main extends Activity
 	    CopyrightOverlay copyright =
 		new CopyrightOverlay(this, R.string.copyright);
 	    overlayList.add(copyright);
+	    copyright.setAlignBottom(true);
+	    copyright.setAlignRight(false);
 
 	    ScaleBarOverlay scale = new ScaleBarOverlay(map);
 	    scale.setAlignBottom(true);

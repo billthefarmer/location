@@ -38,6 +38,9 @@ public class CopyrightOverlay extends Overlay
     private Paint paint;
     private String copyright;
 
+    protected boolean alignBottom = false;
+    protected boolean alignRight  = false;
+    
     // Constructor
 
     public CopyrightOverlay(Context context, int id)
@@ -49,6 +52,20 @@ public class CopyrightOverlay extends Overlay
 	copyright = resources.getString(id);
 
 	paint = new Paint();
+    }
+
+    // Set alignBottom
+
+    public void setAlignBottom(boolean alignBottom)
+    {
+	this.alignBottom = alignBottom;
+    }
+
+    // Set alignRight
+
+    public void setAlignRight(boolean alignRight)
+    {
+	this.alignRight = alignRight;
     }
 
     // Draw
@@ -66,8 +83,29 @@ public class CopyrightOverlay extends Overlay
 	paint.setTextSize(size * (width / 3) / length);
 	paint.setAntiAlias(true);
 
-	// Draw the text bottom left
+	float x = 0;
+	float y = 0;
+
+	if (alignRight)
+	{
+	    x = width - 8;
+	    paint.setTextAlign(Paint.Align.RIGHT);
+	}
+
+	else
+	{
+	    x = 8;
+	    paint.setTextAlign(Paint.Align.LEFT);
+	}
+
+	if (alignBottom)
+	    y = height - 10;
+
+	else
+	    y = paint.getTextSize();
+
+	// Draw the text
 	if (!shadow)
-	    canvas.drawText(copyright, 8, height - 8, paint);
+	    canvas.drawText(copyright, x, y, paint);
     }
 }
