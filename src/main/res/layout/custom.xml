@@ -9,5 +9,5 @@
     tools:ignore="ContentDescription"
     android:layout_marginRight="8dp"
     android:layout_gravity="right"
-    android:src="@drawable/ic_location" >
+    android:src="@drawable/ic_action_place" >
 </ImageView>
