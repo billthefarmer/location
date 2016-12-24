@@ -73,7 +73,6 @@ public class Main extends Activity
 
     private SimpleLocationOverlay simpleLocation;
 
-    private float accuracy;
     private boolean track;
 
     private boolean located;
@@ -143,8 +142,6 @@ public class Main extends Activity
     {
 	super.onResume();
 
-	accuracy = 1000;
-
 	Location location =
 	    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
@@ -192,7 +189,6 @@ public class Main extends Activity
 	switch (id)
 	{
 	case R.id.action_start:
-	    accuracy = 1000;
 	    located = false;
 
 	    Location location =
@@ -239,71 +235,74 @@ public class Main extends Activity
     private void showLocation(Location location)
     {
 	IMapController mapController = map.getController();
+
+	// Zoom map once
 	if (!zoomed)
 	{
 	    mapController.setZoom(14);
 	    zoomed = true;
 	}
 
+	// Get point
 	GeoPoint point = new GeoPoint(location);
 
+	// Centre map once
 	if (!located)
 	{
 	    mapController.setCenter(point);
 	    located = true;
 	}
 
+	// Unless tracking
+	else if (track)
+	    mapController.setCenter(point);
+
+	// Set location
 	simpleLocation.setLocation(point);
 
 	float  acc = location.getAccuracy();
+	double lat = location.getLatitude();
+	double lng = location.getLongitude();
+	double alt = location.getAltitude();
 
-	if (track || acc < accuracy)
+	String latString = Location.convert(lat, Location.FORMAT_SECONDS);
+	String lngString = Location.convert(lng, Location.FORMAT_SECONDS);
+
+	long   time = location.getTime();
+	String date = dateFormat.format(new Date(time));
+
+	LatLng coord = new LatLng(lat, lng);
+	coord.toOSGB36();
+	OSRef OSCoord = coord.toOSRef();
+
+	String text = "";
+
+	if (OSCoord.isValid())
 	{
-	    accuracy = acc;
+	    double east = OSCoord.getEasting();
+	    double north = OSCoord.getNorthing();
+	    String OSString = OSCoord.toSixFigureString();
 
-	    double lat = location.getLatitude();
-	    double lng = location.getLongitude();
-	    double alt = location.getAltitude();
-
-	    String latString = Location.convert(lat, Location.FORMAT_SECONDS);
-	    String lngString = Location.convert(lng, Location.FORMAT_SECONDS);
-
-	    long   tim = location.getTime();
-	    String date = dateFormat.format(new Date(tim));
-
-	    LatLng coord = new LatLng(lat, lng);
-	    coord.toOSGB36();
-	    OSRef OSCoord = coord.toOSRef();
-
-	    String text = "";
-
-	    if (OSCoord.isValid())
-	    {
-		double east = OSCoord.getEasting();
-		double north = OSCoord.getNorthing();
-		String OSString = OSCoord.toSixFigureString();
-
-		String format =
-		    "Latitude: %s\nLongitude: %s\nAltitude: %1.2fm\n" +
-		    "Accuracy: %1.0fm\nOSRef: %1.0f, %1.0f\nOSRef: %s\n" +
-		    "Time: %s";
-		text = String.format(Locale.getDefault(), format, latString,
-				     lngString, alt, acc, east, north, OSString,
-				     date);
-	    }
-
-	    else
-	    {
-		String format =
-		    "Latitude: %s\nLongitude: %s\nAltitude: %1.2fm\n" +
-		    "Accuracy: %1.0fm\nTime: %s";
-		text = String.format(Locale.getDefault(), format, latString,
-				     lngString, alt, acc, date);
-	    }
-
-	    if (locationView != null)
-		locationView.setText(text);
+	    String format =
+		"Latitude: %s\nLongitude: %s\nAltitude: %1.2fm\n" +
+		"Accuracy: %1.0fm\nOSRef: %1.0f, %1.0f\nOSRef: %s\n" +
+		"Time: %s";
+	    text = String.format(Locale.getDefault(), format, latString,
+				 lngString, alt, acc, east, north, OSString,
+				 date);
 	}
+
+	else
+	{
+	    String format =
+		"Latitude: %s\nLongitude: %s\nAltitude: %1.2fm\n" +
+		"Accuracy: %1.0fm\nTime: %s";
+	    text = String.format(Locale.getDefault(), format, latString,
+				 lngString, alt, acc, date);
+	}
+
+	if (locationView != null)
+	    locationView.setText(text);
     }
 
     @Override

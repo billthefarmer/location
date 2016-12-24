@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.DisplayMetrics;
 
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Overlay;
@@ -51,8 +52,14 @@ public class CopyrightOverlay extends Overlay
 	Resources resources = context.getResources();
 	copyright = resources.getString(id);
 
+	// Get the display metrics
+	final DisplayMetrics dm = resources.getDisplayMetrics();
+
+	// Get paint
 	paint = new Paint();
-    }
+	paint.setAntiAlias(true);
+ 	paint.setTextSize(dm.density * 12);
+   }
 
     // Set alignBottom
 
@@ -76,12 +83,12 @@ public class CopyrightOverlay extends Overlay
 	int width = canvas.getWidth();
 	int height = canvas.getHeight();
 
-	float length = paint.measureText(copyright);
-	float size = paint.getTextSize();
+	// float length = paint.measureText(copyright);
+	// float size = paint.getTextSize();
 
-	// Set text size to make text fill half canvas width
-	paint.setTextSize(size * (width / 3) / length);
-	paint.setAntiAlias(true);
+	// Set text size to make text fill one third canvas width
+	// paint.setTextSize(size * (width / 3) / length);
+	// paint.setAntiAlias(true);
 
 	float x = 0;
 	float y = 0;
@@ -99,7 +106,7 @@ public class CopyrightOverlay extends Overlay
 	}
 
 	if (alignBottom)
-	    y = height - 10;
+	    y = height - 8;
 
 	else
 	    y = paint.getTextSize();
