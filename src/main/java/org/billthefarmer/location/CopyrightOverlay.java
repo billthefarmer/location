@@ -83,13 +83,6 @@ public class CopyrightOverlay extends Overlay
 	int width = canvas.getWidth();
 	int height = canvas.getHeight();
 
-	// float length = paint.measureText(copyright);
-	// float size = paint.getTextSize();
-
-	// Set text size to make text fill one third canvas width
-	// paint.setTextSize(size * (width / 3) / length);
-	// paint.setAntiAlias(true);
-
 	float x = 0;
 	float y = 0;
 

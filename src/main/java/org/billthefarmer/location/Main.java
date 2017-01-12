@@ -63,6 +63,10 @@ public class Main extends Activity
 {
     private static final String TAG = "Location";
 
+    private static final int STOP_MODE = 0;
+    private static final int START_MODE = 1;
+    private static final int TRACK_MODE = 2;
+
     private TextView locationView;
     private StatusView statusView;
     private ImageView imageView;
@@ -73,7 +77,7 @@ public class Main extends Activity
 
     private SimpleLocationOverlay simpleLocation;
 
-    private boolean track;
+    private int mode = START_MODE;
 
     private boolean located;
     private boolean zoomed;
@@ -148,9 +152,15 @@ public class Main extends Activity
 	if (location != null)
 	    showLocation(location);
 
-	locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-					       5000, 0, this);
-	locationManager.addGpsStatusListener(this);
+	switch (mode)
+	{
+	case START_MODE:
+	case TRACK_MODE:
+	    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+						   5000, 0, this);
+	    locationManager.addGpsStatusListener(this);
+	    break;
+	}
     }
 
     // On pause
@@ -188,39 +198,43 @@ public class Main extends Activity
 	int id = item.getItemId();
 	switch (id)
 	{
-	case R.id.action_start:
-	    located = false;
+	case R.id.action_mode:
+	    mode = (mode + 1) % (TRACK_MODE + 1);
+	    switch (mode)
+	    {
+	    case STOP_MODE:
+		item.setIcon(R.drawable.ic_action_location_off);
+		locationManager.removeUpdates(this);
+		locationManager.removeGpsStatusListener(this);
 
-	    Location location =
-		locationManager
-		.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		if (imageView != null)
+		    imageView.setVisibility(View.INVISIBLE);
+		break;
 
-	    if (location != null)
-		showLocation(location);
-
-	    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-						   5000, 0, this);
-	    locationManager.addGpsStatusListener(this);
-
-	    if (imageView != null)
-		imageView.setVisibility(View.VISIBLE);
-	    break;
-
-	case R.id.action_stop:
-	    locationManager.removeUpdates(this);
-	    locationManager.removeGpsStatusListener(this);
-
-	    if (imageView != null)
-		imageView.setVisibility(View.INVISIBLE);
-	    break;
-
-	case R.id.action_track:
-	    track = !track;
-	    if (track)
-		item.setIcon(R.drawable.ic_action_location_found);
-
-	    else
+	    case START_MODE:
 		item.setIcon(R.drawable.ic_action_location_searching);
+		located = false;
+
+		Location location =
+		    locationManager
+		    .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+		if (location != null)
+		    showLocation(location);
+
+		locationManager
+		    .requestLocationUpdates(LocationManager.GPS_PROVIDER,
+					    5000, 0, this);
+		locationManager.addGpsStatusListener(this);
+
+		if (imageView != null)
+		    imageView.setVisibility(View.VISIBLE);
+		break;
+
+	    case TRACK_MODE:
+		item.setIcon(R.drawable.ic_action_location_found);
+		break;
+	    }
 	    break;
 
 	default:
@@ -254,7 +268,7 @@ public class Main extends Activity
 	}
 
 	// Unless tracking
-	else if (track)
+	else if (mode == TRACK_MODE)
 	    mapController.setCenter(point);
 
 	// Set location
