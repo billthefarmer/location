@@ -33,17 +33,19 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Overlay;
 
 // CopyrightOverlay
-
 public class CopyrightOverlay extends Overlay
 {
     private Paint paint;
     private String copyright;
+    private final DisplayMetrics dm;
+
+    protected int xOffset = 10;
+    protected int yOffset = 10;
 
     protected boolean alignBottom = false;
     protected boolean alignRight  = false;
     
     // Constructor
-
     public CopyrightOverlay(Context context, int id)
     {
 	super();
@@ -53,7 +55,7 @@ public class CopyrightOverlay extends Overlay
 	copyright = resources.getString(id);
 
 	// Get the display metrics
-	final DisplayMetrics dm = resources.getDisplayMetrics();
+	dm = resources.getDisplayMetrics();
 
 	// Get paint
 	paint = new Paint();
@@ -61,22 +63,37 @@ public class CopyrightOverlay extends Overlay
  	paint.setTextSize(dm.density * 12);
    }
 
-    // Set alignBottom
+    // Set text size
+    public void setTextSize(int fontSize)
+    {
+        paint.setTextSize(dm.density * fontSize);
+    }
 
+    // Set text colour
+    public void setTextColor(int color)
+    {
+        paint.setColor(color);
+    }
+
+    // Set alignBottom
     public void setAlignBottom(boolean alignBottom)
     {
 	this.alignBottom = alignBottom;
     }
 
     // Set alignRight
-
     public void setAlignRight(boolean alignRight)
     {
 	this.alignRight = alignRight;
     }
 
-    // Draw
+    public void setOffset(final int x, final int y)
+    {
+        xOffset = x;
+        yOffset = y;
+    }
 
+    // Draw
     @Override
     public void draw(Canvas canvas, MapView map, boolean shadow)
     {
@@ -86,26 +103,31 @@ public class CopyrightOverlay extends Overlay
 	float x = 0;
 	float y = 0;
 
+	if (shadow)
+	    return;
+
+	if (map.isAnimating())
+            return;
+
 	if (alignRight)
 	{
-	    x = width - 8;
+	    x = width - xOffset;
 	    paint.setTextAlign(Paint.Align.RIGHT);
 	}
 
 	else
 	{
-	    x = 8;
+	    x = xOffset;
 	    paint.setTextAlign(Paint.Align.LEFT);
 	}
 
 	if (alignBottom)
-	    y = height - 8;
+	    y = height - yOffset;
 
 	else
-	    y = paint.getTextSize();
+	    y = paint.getTextSize() + yOffset;
 
 	// Draw the text
-	if (!shadow)
-	    canvas.drawText(copyright, x, y, paint);
+	canvas.drawText(copyright, x, y, paint);
     }
 }
