@@ -52,6 +52,7 @@ import org.osmdroid.api.IMapController;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Overlay;
+import org.osmdroid.views.overlay.CopyrightOverlay;
 import org.osmdroid.views.overlay.mylocation.SimpleLocationOverlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 
@@ -76,6 +77,7 @@ public class Main extends Activity
     private DateFormat dateFormat;
 
     private SimpleLocationOverlay simpleLocation;
+    private TextOverlay textOverlay;
 
     private int mode = START_MODE;
 
@@ -110,7 +112,7 @@ public class Main extends Activity
 
 	    // Add the overlays
 	    CopyrightOverlay copyright =
-		new CopyrightOverlay(this, R.string.copyright);
+		new CopyrightOverlay(this);
 	    overlayList.add(copyright);
 	    copyright.setAlignBottom(true);
 	    copyright.setAlignRight(false);
@@ -121,9 +123,14 @@ public class Main extends Activity
 	    overlayList.add(scale);
 
 	    Bitmap bitmap = BitmapFactory
-		.decodeResource(getResources(), R.drawable.marker_default);
+		.decodeResource(getResources(), R.drawable.center);
 	    simpleLocation = new SimpleLocationOverlay(bitmap);
 	    overlayList.add(simpleLocation);
+
+            TextOverlay textOverlay = new TextOverlay(this);
+            overlayList.add(textOverlay);
+	    textOverlay.setAlignBottom(false);
+	    textOverlay.setAlignRight(false);
 	}
 
 	// Acquire a reference to the system Location Manager
@@ -152,6 +159,8 @@ public class Main extends Activity
 	if (location != null)
 	    showLocation(location);
 
+        if (textOverlay != null)
+            textOverlay.setText("Test\nagain");
 	switch (mode)
 	{
 	case START_MODE:
