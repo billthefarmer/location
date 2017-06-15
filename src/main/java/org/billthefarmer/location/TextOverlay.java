@@ -29,6 +29,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.DisplayMetrics;
 
+import java.util.List;
+
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Overlay;
 
@@ -36,7 +38,7 @@ import org.osmdroid.views.overlay.Overlay;
 public class TextOverlay extends Overlay
 {
     private Paint paint;
-    private String text;
+    private List<String> textList;
 
     private final DisplayMetrics dm;
 
@@ -64,9 +66,9 @@ public class TextOverlay extends Overlay
    }
 
     // Set text
-    public void setText(String text)
+    public void setText(List<String> textList)
     {
-        this.text = text;
+        this.textList = textList;
     }
 
     // Set text size
@@ -134,6 +136,10 @@ public class TextOverlay extends Overlay
 	    y = paint.getTextSize() + yOffset;
 
 	// Draw the text
-	canvas.drawText(text, x, y, paint);
+        for (String text: textList)
+        {
+            canvas.drawText(text, x, y, paint);
+            y += (alignBottom)? -paint.getTextSize(): paint.getTextSize();
+        }
     }
 }

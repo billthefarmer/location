@@ -43,6 +43,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.text.DateFormat;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -127,7 +129,7 @@ public class Main extends Activity
 	    simpleLocation = new SimpleLocationOverlay(bitmap);
 	    overlayList.add(simpleLocation);
 
-            TextOverlay textOverlay = new TextOverlay(this);
+            textOverlay = new TextOverlay(this);
             overlayList.add(textOverlay);
 	    textOverlay.setAlignBottom(false);
 	    textOverlay.setAlignRight(false);
@@ -159,8 +161,6 @@ public class Main extends Activity
 	if (location != null)
 	    showLocation(location);
 
-        if (textOverlay != null)
-            textOverlay.setText("Test\nagain");
 	switch (mode)
 	{
 	case START_MODE:
@@ -313,6 +313,12 @@ public class Main extends Activity
 	    text = String.format(Locale.getDefault(), format, latString,
 				 lngString, alt, acc, east, north, OSString,
 				 date);
+            List<String> textList = new ArrayList<String>();
+            textList.add(String.format(Locale.getDefault(),
+                                       "Osref: %s", OSString));
+            textList.add(String.format(Locale.getDefault(),
+                                       "Osref: %1.0f, %1.0f", east, north));
+            textOverlay.setText(textList);
 	}
 
 	else
