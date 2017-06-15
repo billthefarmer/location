@@ -79,7 +79,8 @@ public class Main extends Activity
     private DateFormat dateFormat;
 
     private SimpleLocationOverlay simpleLocation;
-    private TextOverlay textOverlay;
+    private TextOverlay osrefOverlay;
+    private TextOverlay locationOverlay;
 
     private int mode = START_MODE;
 
@@ -129,10 +130,15 @@ public class Main extends Activity
 	    simpleLocation = new SimpleLocationOverlay(bitmap);
 	    overlayList.add(simpleLocation);
 
-            textOverlay = new TextOverlay(this);
-            overlayList.add(textOverlay);
-	    textOverlay.setAlignBottom(false);
-	    textOverlay.setAlignRight(false);
+            osrefOverlay = new TextOverlay(this);
+            overlayList.add(osrefOverlay);
+	    osrefOverlay.setAlignBottom(false);
+	    osrefOverlay.setAlignRight(false);
+
+            locationOverlay = new TextOverlay(this);
+            overlayList.add(locationOverlay);
+	    locationOverlay.setAlignBottom(false);
+	    locationOverlay.setAlignRight(true);
 	}
 
 	// Acquire a reference to the system Location Manager
@@ -291,6 +297,15 @@ public class Main extends Activity
 	String latString = Location.convert(lat, Location.FORMAT_SECONDS);
 	String lngString = Location.convert(lng, Location.FORMAT_SECONDS);
 
+        List<String> locationList = new ArrayList<String>();
+        locationList.add(String.format(Locale.getDefault(),
+                                   "%s, %s", lat, lng));
+        locationList.add(String.format(Locale.getDefault(),
+                                       "Altitude: %1.0fm", alt));
+        locationList.add(String.format(Locale.getDefault(),
+                                       "Accuracy: %1.0fm", acc));
+        locationOverlay.setText(locationList);
+
 	long   time = location.getTime();
 	String date = dateFormat.format(new Date(time));
 
@@ -298,40 +313,19 @@ public class Main extends Activity
 	coord.toOSGB36();
 	OSRef OSCoord = coord.toOSRef();
 
-	String text = "";
-
 	if (OSCoord.isValid())
 	{
 	    double east = OSCoord.getEasting();
 	    double north = OSCoord.getNorthing();
 	    String OSString = OSCoord.toSixFigureString();
 
-	    String format =
-		"Latitude: %s\nLongitude: %s\nAltitude: %1.2fm\n" +
-		"Accuracy: %1.0fm\nOSRef: %1.0f, %1.0f\nOSRef: %s\n" +
-		"Time: %s";
-	    text = String.format(Locale.getDefault(), format, latString,
-				 lngString, alt, acc, east, north, OSString,
-				 date);
-            List<String> textList = new ArrayList<String>();
-            textList.add(String.format(Locale.getDefault(),
+            List<String> osrefList = new ArrayList<String>();
+            osrefList.add(String.format(Locale.getDefault(),
                                        "Osref: %s", OSString));
-            textList.add(String.format(Locale.getDefault(),
+            osrefList.add(String.format(Locale.getDefault(),
                                        "Osref: %1.0f, %1.0f", east, north));
-            textOverlay.setText(textList);
+            osrefOverlay.setText(osrefList);
 	}
-
-	else
-	{
-	    String format =
-		"Latitude: %s\nLongitude: %s\nAltitude: %1.2fm\n" +
-		"Accuracy: %1.0fm\nTime: %s";
-	    text = String.format(Locale.getDefault(), format, latString,
-				 lngString, alt, acc, date);
-	}
-
-	if (locationView != null)
-	    locationView.setText(text);
     }
 
     @Override
