@@ -2,9 +2,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
   <item
-      android:id="@+id/action_mode"
+      android:id="@+id/action_off"
       android:showAsAction="ifRoom"
-      android:title="@string/mode"
-      android:icon="@drawable/ic_action_location_searching" />
+      android:title="@string/off"
+      android:icon="@drawable/ic_action_off" />
+
+  <item
+      android:id="@+id/action_locate"
+      android:showAsAction="ifRoom"
+      android:title="@string/locate"
+      android:icon="@drawable/ic_action_locate" />
+
+  <item
+      android:id="@+id/action_track"
+      android:showAsAction="ifRoom"
+      android:title="@string/track"
+      android:icon="@drawable/ic_action_track" />
 
 </menu>

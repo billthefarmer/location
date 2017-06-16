@@ -70,17 +70,15 @@ public class Main extends Activity
     private static final int START_MODE = 1;
     private static final int TRACK_MODE = 2;
 
-    private TextView locationView;
     private StatusView statusView;
-    private ImageView imageView;
     private MapView map;
 
     private LocationManager locationManager;
     private DateFormat dateFormat;
 
     private SimpleLocationOverlay simpleLocation;
-    private TextOverlay osrefOverlay;
-    private TextOverlay locationOverlay;
+    private TextOverlay leftOverlay;
+    private TextOverlay rightOverlay;
 
     private int mode = START_MODE;
 
@@ -95,7 +93,6 @@ public class Main extends Activity
         setContentView(R.layout.main);
 
 	// Get the views
-	locationView = (TextView)findViewById(R.id.location);
 	statusView = (StatusView)findViewById(R.id.status);
 
 	// Set the user agent
@@ -130,26 +127,20 @@ public class Main extends Activity
 	    simpleLocation = new SimpleLocationOverlay(bitmap);
 	    overlayList.add(simpleLocation);
 
-            osrefOverlay = new TextOverlay(this);
-            overlayList.add(osrefOverlay);
-	    osrefOverlay.setAlignBottom(false);
-	    osrefOverlay.setAlignRight(false);
+            leftOverlay = new TextOverlay(this);
+            overlayList.add(leftOverlay);
+	    leftOverlay.setAlignBottom(false);
+	    leftOverlay.setAlignRight(false);
 
-            locationOverlay = new TextOverlay(this);
-            overlayList.add(locationOverlay);
-	    locationOverlay.setAlignBottom(false);
-	    locationOverlay.setAlignRight(true);
+            rightOverlay = new TextOverlay(this);
+            overlayList.add(rightOverlay);
+	    rightOverlay.setAlignBottom(false);
+	    rightOverlay.setAlignRight(true);
 	}
 
 	// Acquire a reference to the system Location Manager
 	locationManager =
 	    (LocationManager)getSystemService(LOCATION_SERVICE);
-
-	// Add custom view to action bar
-	ActionBar actionBar = getActionBar();
-	actionBar.setCustomView(R.layout.custom);
-	actionBar.setDisplayShowCustomEnabled(true);
-	imageView = (ImageView)actionBar.getCustomView();
 
 	dateFormat = DateFormat.getDateTimeInstance();
     }
@@ -190,7 +181,6 @@ public class Main extends Activity
     }
 
     // On create options menu
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -203,8 +193,17 @@ public class Main extends Activity
 	return true;
     }
 
-    // On options item selected
+    // onPrepareOptionsMenu
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu)
+    {
+        menu.findItem(R.id.action_off).setEnabled(mode != STOP_MODE);
+        menu.findItem(R.id.action_locate).setEnabled(mode != START_MODE);
+        menu.findItem(R.id.action_track).setEnabled(mode != TRACK_MODE);
+        return true;
+    }
 
+    // On options item selected
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
@@ -213,49 +212,53 @@ public class Main extends Activity
 	int id = item.getItemId();
 	switch (id)
 	{
-	case R.id.action_mode:
-	    mode = (mode + 1) % (TRACK_MODE + 1);
-	    switch (mode)
-	    {
-	    case STOP_MODE:
-		item.setIcon(R.drawable.ic_action_location_off);
-		locationManager.removeUpdates(this);
-		locationManager.removeGpsStatusListener(this);
+        case R.id.action_off:
+            mode = STOP_MODE;
+            locationManager.removeUpdates(this);
+            locationManager.removeGpsStatusListener(this);
+            break;
 
-		if (imageView != null)
-		    imageView.setVisibility(View.INVISIBLE);
-		break;
+	case R.id.action_locate:
+            mode = START_MODE;
+            locationManager.removeUpdates(this);
+            locationManager.removeGpsStatusListener(this);
+            located = false;
 
-	    case START_MODE:
-		item.setIcon(R.drawable.ic_action_location_searching);
-		located = false;
+            Location location = locationManager
+                .getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-		Location location =
-		    locationManager
-		    .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (location != null)
+                showLocation(location);
 
-		if (location != null)
-		    showLocation(location);
+            locationManager
+                .requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                                        5000, 0, this);
+            locationManager.addGpsStatusListener(this);
+            break;
 
-		locationManager
-		    .requestLocationUpdates(LocationManager.GPS_PROVIDER,
-					    5000, 0, this);
-		locationManager.addGpsStatusListener(this);
+	case R.id.action_track:
+            mode = TRACK_MODE;
+            locationManager.removeUpdates(this);
+            locationManager.removeGpsStatusListener(this);
+            located = false;
 
-		if (imageView != null)
-		    imageView.setVisibility(View.VISIBLE);
-		break;
+            location = locationManager
+                .getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-	    case TRACK_MODE:
-		item.setIcon(R.drawable.ic_action_location_found);
-		break;
-	    }
-	    break;
+            if (location != null)
+                showLocation(location);
+
+            locationManager
+                .requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                                        5000, 0, this);
+            locationManager.addGpsStatusListener(this);
+            break;
 
 	default:
 	    return false;
 	}
 
+        invalidateOptionsMenu();
 	return true;
     }
 
@@ -297,17 +300,20 @@ public class Main extends Activity
 	String latString = Location.convert(lat, Location.FORMAT_SECONDS);
 	String lngString = Location.convert(lng, Location.FORMAT_SECONDS);
 
-        List<String> locationList = new ArrayList<String>();
-        locationList.add(String.format(Locale.getDefault(),
-                                   "%s, %s", lat, lng));
-        locationList.add(String.format(Locale.getDefault(),
+        List<String> rightList = new ArrayList<String>();
+        rightList.add(String.format(Locale.getDefault(),
+                                   "%s, %s", latString, lngString));
+        rightList.add(String.format(Locale.getDefault(),
                                        "Altitude: %1.0fm", alt));
-        locationList.add(String.format(Locale.getDefault(),
+        rightList.add(String.format(Locale.getDefault(),
                                        "Accuracy: %1.0fm", acc));
-        locationOverlay.setText(locationList);
+        rightOverlay.setText(rightList);
 
 	long   time = location.getTime();
 	String date = dateFormat.format(new Date(time));
+
+        List<String> leftList = new ArrayList<String>();
+        leftList.add(date);
 
 	LatLng coord = new LatLng(lat, lng);
 	coord.toOSGB36();
@@ -319,13 +325,13 @@ public class Main extends Activity
 	    double north = OSCoord.getNorthing();
 	    String OSString = OSCoord.toSixFigureString();
 
-            List<String> osrefList = new ArrayList<String>();
-            osrefList.add(String.format(Locale.getDefault(),
-                                       "Osref: %s", OSString));
-            osrefList.add(String.format(Locale.getDefault(),
-                                       "Osref: %1.0f, %1.0f", east, north));
-            osrefOverlay.setText(osrefList);
+            leftList.add(OSString);
+            leftList.add(String.format(Locale.getDefault(),
+                                       "%1.0f, %1.0f", east, north));
 	}
+
+        leftOverlay.setText(leftList);
+        map.invalidate();
     }
 
     @Override

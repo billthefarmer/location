@@ -5,16 +5,6 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
-  <TextView
-      android:id="@+id/location"
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content"
-      android:layout_marginLeft="8dp"
-      android:layout_marginRight="8dp"
-      android:layout_marginTop="8dp"
-      android:text="@string/location"
-      android:textAppearance="?android:attr/textAppearanceLarge" />
-
   <org.billthefarmer.location.StatusView
       android:id="@+id/status"
       android:layout_width="fill_parent"

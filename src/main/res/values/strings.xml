@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
   <string name="app_name">Location</string>
-  <string name="mode">Mode</string>
+  <string name="off">Off</string>
+  <string name="locate">Locate</string>
+  <string name="track">Track</string>
 
-  <string name="location">
-    Latitude:\nLongitude:\nAltitude:\nAccuracy:\nTime:
-  </string>
-
-  <string name="copyright">
-    \u00A9 OpenStreetMap contributors
-  </string>
 </resources>
