@@ -73,6 +73,9 @@ public class Main extends Activity
     private static final int START_MODE = 1;
     private static final int TRACK_MODE = 2;
 
+    private static final int SHORT_DELAY = 5000;
+    private static final int LONG_DELAY = 10000;
+
     private StatusView statusView;
     private MapView map;
 
@@ -86,6 +89,7 @@ public class Main extends Activity
     private int mode = START_MODE;
 
     private boolean located;
+    private boolean scrolled;
     private boolean zoomed;
     
     // Called when the activity is first created.
@@ -147,6 +151,8 @@ public class Main extends Activity
                         if (located)
                         {
                             IGeoPoint point = map.getMapCenter();
+                            if (zoomed)
+                                scrolled = true;
 
                             double lat = point.getLatitude();
                             double lng = point.getLongitude();
@@ -187,7 +193,7 @@ public class Main extends Activity
 	case START_MODE:
 	case TRACK_MODE:
 	    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-						   5000, 0, this);
+						   SHORT_DELAY, 0, this);
 	    locationManager.addGpsStatusListener(this);
 	    break;
 	}
@@ -256,7 +262,7 @@ public class Main extends Activity
 
             locationManager
                 .requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                                        5000, 0, this);
+                                        SHORT_DELAY, 0, this);
             locationManager.addGpsStatusListener(this);
             break;
 
@@ -274,7 +280,7 @@ public class Main extends Activity
 
             locationManager
                 .requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                                        5000, 0, this);
+                                        SHORT_DELAY, 0, this);
             locationManager.addGpsStatusListener(this);
             break;
 
@@ -308,7 +314,13 @@ public class Main extends Activity
         rightOverlay.setText(rightList);
 
 	long   time = location.getTime();
-	String date = dateFormat.format(new Date(time));
+
+        String date;
+        if (zoomed)
+            date = dateFormat.format(new Date(time));
+
+        else
+            date = dateFormat.format(new Date());
 
         List<String> leftList = new ArrayList<String>();
         leftList.add(date);
@@ -362,6 +374,17 @@ public class Main extends Activity
 	simpleLocation.setLocation(point);
 
 	showLocation(location);
+
+        if (scrolled)
+            map.postDelayed(new Runnable()
+                {
+                    // run
+                    @Override
+                    public void run()
+                    {
+                        scrolled = false;
+                    }
+                }, LONG_DELAY);
     }
 
     @Override
