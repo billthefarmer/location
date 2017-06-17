@@ -49,8 +49,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.api.IMapController;
+import org.osmdroid.api.IGeoPoint;
+import org.osmdroid.events.MapAdapter;
+import org.osmdroid.events.ScrollEvent;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Overlay;
@@ -136,6 +139,27 @@ public class Main extends Activity
             overlayList.add(rightOverlay);
 	    rightOverlay.setAlignBottom(false);
 	    rightOverlay.setAlignRight(true);
+
+            map.setMapListener(new MapAdapter()
+                {
+                    public boolean onScroll(ScrollEvent event)
+                    {
+                        if (located)
+                        {
+                            IGeoPoint point = map.getMapCenter();
+
+                            double lat = point.getLatitude();
+                            double lng = point.getLongitude();
+
+                            Location location = new Location("MapView");
+                            location.setLatitude(lat);
+                            location.setLongitude(lng);
+                            showLocation(location);
+                        }
+
+                        return true;
+                    }
+                });
 	}
 
 	// Acquire a reference to the system Location Manager
@@ -266,32 +290,6 @@ public class Main extends Activity
 
     private void showLocation(Location location)
     {
-	IMapController mapController = map.getController();
-
-	// Zoom map once
-	if (!zoomed)
-	{
-	    mapController.setZoom(14);
-	    zoomed = true;
-	}
-
-	// Get point
-	GeoPoint point = new GeoPoint(location);
-
-	// Centre map once
-	if (!located)
-	{
-	    mapController.setCenter(point);
-	    located = true;
-	}
-
-	// Unless tracking
-	else if (mode == TRACK_MODE)
-	    mapController.setCenter(point);
-
-	// Set location
-	simpleLocation.setLocation(point);
-
 	float  acc = location.getAccuracy();
 	double lat = location.getLatitude();
 	double lng = location.getLongitude();
@@ -337,6 +335,32 @@ public class Main extends Activity
     @Override
     public void onLocationChanged(Location location)
     {
+	IMapController mapController = map.getController();
+
+	// Zoom map once
+	if (!zoomed)
+	{
+	    mapController.setZoom(14);
+	    zoomed = true;
+	}
+
+	// Get point
+	GeoPoint point = new GeoPoint(location);
+
+	// Centre map once
+	if (!located)
+	{
+	    mapController.setCenter(point);
+	    located = true;
+	}
+
+	// Unless tracking
+	else if (mode == TRACK_MODE)
+	    mapController.setCenter(point);
+
+	// Set location
+	simpleLocation.setLocation(point);
+
 	showLocation(location);
     }
 
