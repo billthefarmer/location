@@ -316,11 +316,11 @@ public class Main extends Activity
 	long   time = location.getTime();
 
         String date;
-        if (zoomed)
-            date = dateFormat.format(new Date(time));
+        if (scrolled)
+            date = dateFormat.format(new Date());
 
         else
-            date = dateFormat.format(new Date());
+            date = dateFormat.format(new Date(time));
 
         List<String> leftList = new ArrayList<String>();
         leftList.add(date);
@@ -373,8 +373,6 @@ public class Main extends Activity
 	// Set location
 	simpleLocation.setLocation(point);
 
-	showLocation(location);
-
         if (scrolled)
             map.postDelayed(new Runnable()
                 {
@@ -385,7 +383,10 @@ public class Main extends Activity
                         scrolled = false;
                     }
                 }, LONG_DELAY);
-    }
+
+        else
+            showLocation(location);
+  }
 
     @Override
     public void onGpsStatusChanged(int event)
