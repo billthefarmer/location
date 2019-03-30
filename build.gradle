@@ -2,18 +2,30 @@
 buildscript {
     repositories {
         jcenter()
+	google()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.2'
+        classpath 'com.android.tools.build:gradle:3.3.2'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        google()
+    }
+
+    tasks.withType(JavaCompile) {
+        options.deprecation = true
     }
 }
 
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 'android-17'
-    buildToolsVersion '24.0.2'
+    compileSdkVersion 22
+    buildToolsVersion '28.0.3'
 
     lintOptions {
 	disable 'IconDensities', 'RtlHardcoded'
@@ -21,10 +33,6 @@ android {
     }
 }
 
-repositories {
-     jcenter()
-}
-
 dependencies {
-    compile 'org.osmdroid:osmdroid-android:5.6.4'
+    implementation 'org.osmdroid:osmdroid-android:6.1.0'
 }

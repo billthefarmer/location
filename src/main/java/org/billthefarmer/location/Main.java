@@ -25,14 +25,16 @@ package org.billthefarmer.location;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Location;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
+import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,17 +51,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.osmdroid.api.IMapController;
 import org.osmdroid.api.IGeoPoint;
+import org.osmdroid.api.IMapController;
+import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapAdapter;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.CopyrightOverlay;
-import org.osmdroid.views.overlay.mylocation.SimpleLocationOverlay;
+import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
+import org.osmdroid.views.overlay.mylocation.SimpleLocationOverlay;
 
 import uk.me.jstott.jcoord.LatLng;
 import uk.me.jstott.jcoord.OSRef;
@@ -94,17 +97,22 @@ public class Main extends Activity
     
     // Called when the activity is first created.
     @Override
+    @SuppressWarnings("deprecation")
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        Context context = getApplicationContext();
+        Configuration.getInstance()
+            .load(context, PreferenceManager
+                  .getDefaultSharedPreferences(context));
         setContentView(R.layout.main);
 
 	// Get the views
 	statusView = (StatusView)findViewById(R.id.status);
 
 	// Set the user agent
-	org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants
-	    .setUserAgentValue(BuildConfig.APPLICATION_ID);
+	// org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants
+	//     .setUserAgentValue(BuildConfig.APPLICATION_ID);
 
 	// Get the map
         map = (MapView)findViewById(R.id.map);
@@ -345,6 +353,7 @@ public class Main extends Activity
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onLocationChanged(Location location)
     {
 	IMapController mapController = map.getController();
