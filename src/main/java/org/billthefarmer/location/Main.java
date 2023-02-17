@@ -23,9 +23,11 @@
 
 package org.billthefarmer.location;
 
+import android.Manifest;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.GpsSatellite;
@@ -33,6 +35,7 @@ import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -76,6 +79,8 @@ public class Main extends Activity
     private static final int START_MODE = 1;
     private static final int TRACK_MODE = 2;
 
+    private static final int REQUEST_PERMS = 1;
+
     private static final int SHORT_DELAY = 5000;
     private static final int LONG_DELAY = 10000;
 
@@ -109,10 +114,6 @@ public class Main extends Activity
 
 	// Get the views
 	statusView = (StatusView)findViewById(R.id.status);
-
-	// Set the user agent
-	// org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants
-	//     .setUserAgentValue(BuildConfig.APPLICATION_ID);
 
 	// Get the map
         map = (MapView)findViewById(R.id.map);
@@ -153,28 +154,43 @@ public class Main extends Activity
 	    rightOverlay.setAlignRight(true);
 
             map.setMapListener(new MapAdapter()
+            {
+                public boolean onScroll(ScrollEvent event)
                 {
-                    public boolean onScroll(ScrollEvent event)
+                    if (located)
                     {
-                        if (located)
-                        {
-                            IGeoPoint point = map.getMapCenter();
-                            if (zoomed)
-                                scrolled = true;
+                        IGeoPoint point = map.getMapCenter();
+                        if (zoomed)
+                            scrolled = true;
 
-                            double lat = point.getLatitude();
-                            double lng = point.getLongitude();
+                        double lat = point.getLatitude();
+                        double lng = point.getLongitude();
 
-                            Location location = new Location("MapView");
-                            location.setLatitude(lat);
-                            location.setLongitude(lng);
-                            showLocation(location);
-                        }
-
-                        return true;
+                        Location location = new Location("MapView");
+                        location.setLatitude(lat);
+                        location.setLongitude(lng);
+                        showLocation(location);
                     }
-                });
+
+                    return true;
+                }
+            });
 	}
+
+        // Check permissions
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED)
+            {
+                requestPermissions(new String[]
+                {Manifest.permission.ACCESS_FINE_LOCATION,
+                 Manifest.permission.READ_EXTERNAL_STORAGE,
+                 Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                   REQUEST_PERMS);
+                return;
+            }
+        }
 
 	// Acquire a reference to the system Location Manager
 	locationManager =
@@ -208,7 +224,6 @@ public class Main extends Activity
     }
 
     // On pause
-
     @Override
     protected void onPause()
     {
@@ -224,7 +239,6 @@ public class Main extends Activity
     {
 	// Inflate the menu; this adds items to the action bar if it
 	// is present.
-
 	MenuInflater inflater = getMenuInflater();
 	inflater.inflate(R.menu.main, menu);
 
@@ -246,7 +260,6 @@ public class Main extends Activity
     public boolean onOptionsItemSelected(MenuItem item)
     {
 	// Get id
-
 	int id = item.getItemId();
 	switch (id)
 	{
@@ -300,8 +313,27 @@ public class Main extends Activity
 	return true;
     }
 
-    // Show location
+    // onRequestPermissionsResult
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions,
+                                           int[] grantResults)
+    {
+        switch (requestCode)
+        {
+        case REQUEST_PERMS:
+            for (int i = 0; i < grantResults.length; i++)
+                if (permissions[i].equals(Manifest.permission
+                                          .ACCESS_FINE_LOCATION) &&
+                    grantResults[i] == PackageManager.PERMISSION_GRANTED)
+                    // Acquire a reference to the system Location
+                    // Manager
+                    locationManager =
+                        (LocationManager)getSystemService(LOCATION_SERVICE);
+        }
+    }
 
+    // Show location
     private void showLocation(Location location)
     {
 	float  acc = location.getAccuracy();
@@ -395,7 +427,7 @@ public class Main extends Activity
 
         else
             showLocation(location);
-  }
+    }
 
     @Override
     public void onGpsStatusChanged(int event)
