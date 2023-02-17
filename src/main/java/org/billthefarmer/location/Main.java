@@ -2,7 +2,7 @@
 //
 //  Location - An Android location app.
 //
-//  Copyright (C) 2015	Bill Farmer
+//  Copyright (C) 2015  Bill Farmer
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-//  Bill Farmer	 william j farmer [at] yahoo [dot] co [dot] uk.
+//  Bill Farmer  william j farmer [at] yahoo [dot] co [dot] uk.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -112,46 +112,46 @@ public class Main extends Activity
                   .getDefaultSharedPreferences(context));
         setContentView(R.layout.main);
 
-	// Get the views
-	statusView = (StatusView)findViewById(R.id.status);
+        // Get the views
+        statusView = (StatusView)findViewById(R.id.status);
 
-	// Get the map
+        // Get the map
         map = (MapView)findViewById(R.id.map);
-	if (map != null)
-	{
-	    // Set up the map
-	    map.setTileSource(TileSourceFactory.MAPNIK);
-	    map.setBuiltInZoomControls(true);
-	    map.setMultiTouchControls(true);
+        if (map != null)
+        {
+            // Set up the map
+            map.setTileSource(TileSourceFactory.MAPNIK);
+            map.setBuiltInZoomControls(true);
+            map.setMultiTouchControls(true);
 
-	    List<Overlay> overlayList = map.getOverlays();
+            List<Overlay> overlayList = map.getOverlays();
 
-	    // Add the overlays
-	    CopyrightOverlay copyright =
-		new CopyrightOverlay(this);
-	    overlayList.add(copyright);
-	    copyright.setAlignBottom(true);
-	    copyright.setAlignRight(false);
+            // Add the overlays
+            CopyrightOverlay copyright =
+                new CopyrightOverlay(this);
+            overlayList.add(copyright);
+            copyright.setAlignBottom(true);
+            copyright.setAlignRight(false);
 
-	    ScaleBarOverlay scale = new ScaleBarOverlay(map);
-	    scale.setAlignBottom(true);
-	    scale.setAlignRight(true);
-	    overlayList.add(scale);
+            ScaleBarOverlay scale = new ScaleBarOverlay(map);
+            scale.setAlignBottom(true);
+            scale.setAlignRight(true);
+            overlayList.add(scale);
 
-	    Bitmap bitmap = BitmapFactory
-		.decodeResource(getResources(), R.drawable.center);
-	    simpleLocation = new SimpleLocationOverlay(bitmap);
-	    overlayList.add(simpleLocation);
+            Bitmap bitmap = BitmapFactory
+                .decodeResource(getResources(), R.drawable.center);
+            simpleLocation = new SimpleLocationOverlay(bitmap);
+            overlayList.add(simpleLocation);
 
             leftOverlay = new TextOverlay(this);
             overlayList.add(leftOverlay);
-	    leftOverlay.setAlignBottom(false);
-	    leftOverlay.setAlignRight(false);
+            leftOverlay.setAlignBottom(false);
+            leftOverlay.setAlignRight(false);
 
             rightOverlay = new TextOverlay(this);
             overlayList.add(rightOverlay);
-	    rightOverlay.setAlignBottom(false);
-	    rightOverlay.setAlignRight(true);
+            rightOverlay.setAlignBottom(false);
+            rightOverlay.setAlignRight(true);
 
             map.setMapListener(new MapAdapter()
             {
@@ -175,7 +175,7 @@ public class Main extends Activity
                     return true;
                 }
             });
-	}
+        }
 
         // Check permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
@@ -192,11 +192,11 @@ public class Main extends Activity
             }
         }
 
-	// Acquire a reference to the system Location Manager
-	locationManager =
-	    (LocationManager)getSystemService(LOCATION_SERVICE);
+        // Acquire a reference to the system Location Manager
+        locationManager =
+            (LocationManager)getSystemService(LOCATION_SERVICE);
 
-	dateFormat = DateFormat.getDateTimeInstance();
+        dateFormat = DateFormat.getDateTimeInstance();
     }
 
     // On resume
@@ -204,45 +204,60 @@ public class Main extends Activity
     @Override
     protected void onResume()
     {
-	super.onResume();
+        super.onResume();
 
-	Location location =
-	    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        // Check permissions
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED)
+            {
+                requestPermissions(new String[]
+                {Manifest.permission.ACCESS_FINE_LOCATION,
+                 Manifest.permission.READ_EXTERNAL_STORAGE,
+                 Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                   REQUEST_PERMS);
+                return;
+            }
+        }
 
-	if (location != null)
-	    showLocation(location);
+        Location location =
+            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-	switch (mode)
-	{
-	case START_MODE:
-	case TRACK_MODE:
-	    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-						   SHORT_DELAY, 0, this);
-	    locationManager.addGpsStatusListener(this);
-	    break;
-	}
+        if (location != null)
+            showLocation(location);
+
+        switch (mode)
+        {
+        case START_MODE:
+        case TRACK_MODE:
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                                                   SHORT_DELAY, 0, this);
+            locationManager.addGpsStatusListener(this);
+            break;
+        }
     }
 
     // On pause
     @Override
     protected void onPause()
     {
-	super.onPause();
+        super.onPause();
 
-	locationManager.removeUpdates(this);
-	locationManager.removeGpsStatusListener(this);
+        locationManager.removeUpdates(this);
+        locationManager.removeGpsStatusListener(this);
     }
 
     // On create options menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-	// Inflate the menu; this adds items to the action bar if it
-	// is present.
-	MenuInflater inflater = getMenuInflater();
-	inflater.inflate(R.menu.main, menu);
+        // Inflate the menu; this adds items to the action bar if it
+        // is present.
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main, menu);
 
-	return true;
+        return true;
     }
 
     // onPrepareOptionsMenu
@@ -259,21 +274,36 @@ public class Main extends Activity
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-	// Get id
-	int id = item.getItemId();
-	switch (id)
-	{
+        // Get id
+        int id = item.getItemId();
+        switch (id)
+        {
         case R.id.action_off:
             mode = STOP_MODE;
             locationManager.removeUpdates(this);
             locationManager.removeGpsStatusListener(this);
             break;
 
-	case R.id.action_locate:
+        case R.id.action_locate:
             mode = START_MODE;
             locationManager.removeUpdates(this);
             locationManager.removeGpsStatusListener(this);
             located = false;
+
+            // Check permissions
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            {
+                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED)
+                {
+                    requestPermissions(new String[]
+                    {Manifest.permission.ACCESS_FINE_LOCATION,
+                     Manifest.permission.READ_EXTERNAL_STORAGE,
+                     Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                       REQUEST_PERMS);
+                    return true;
+                }
+            }
 
             Location location = locationManager
                 .getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -287,7 +317,7 @@ public class Main extends Activity
             locationManager.addGpsStatusListener(this);
             break;
 
-	case R.id.action_track:
+        case R.id.action_track:
             mode = TRACK_MODE;
             locationManager.removeUpdates(this);
             locationManager.removeGpsStatusListener(this);
@@ -305,12 +335,12 @@ public class Main extends Activity
             locationManager.addGpsStatusListener(this);
             break;
 
-	default:
-	    return false;
-	}
+        default:
+            return false;
+        }
 
         invalidateOptionsMenu();
-	return true;
+        return true;
     }
 
     // onRequestPermissionsResult
@@ -336,24 +366,24 @@ public class Main extends Activity
     // Show location
     private void showLocation(Location location)
     {
-	float  acc = location.getAccuracy();
-	double lat = location.getLatitude();
-	double lng = location.getLongitude();
-	double alt = location.getAltitude();
+        float  acc = location.getAccuracy();
+        double lat = location.getLatitude();
+        double lng = location.getLongitude();
+        double alt = location.getAltitude();
 
-	String latString = Location.convert(lat, Location.FORMAT_SECONDS);
-	String lngString = Location.convert(lng, Location.FORMAT_SECONDS);
+        String latString = Location.convert(lat, Location.FORMAT_SECONDS);
+        String lngString = Location.convert(lng, Location.FORMAT_SECONDS);
 
         List<String> rightList = new ArrayList<String>();
         rightList.add(String.format(Locale.getDefault(),
-                                   "%s, %s", latString, lngString));
+                                    "%s, %s", latString, lngString));
         rightList.add(String.format(Locale.getDefault(),
-                                       "Altitude: %1.0fm", alt));
+                                    "Altitude: %1.0fm", alt));
         rightList.add(String.format(Locale.getDefault(),
-                                       "Accuracy: %1.0fm", acc));
+                                    "Accuracy: %1.0fm", acc));
         rightOverlay.setText(rightList);
 
-	long   time = location.getTime();
+        long   time = location.getTime();
 
         String date;
         if (scrolled)
@@ -365,20 +395,20 @@ public class Main extends Activity
         List<String> leftList = new ArrayList<String>();
         leftList.add(date);
 
-	LatLng coord = new LatLng(lat, lng);
-	coord.toOSGB36();
-	OSRef OSCoord = coord.toOSRef();
+        LatLng coord = new LatLng(lat, lng);
+        coord.toOSGB36();
+        OSRef OSCoord = coord.toOSRef();
 
-	if (OSCoord.isValid())
-	{
-	    double east = OSCoord.getEasting();
-	    double north = OSCoord.getNorthing();
-	    String OSString = OSCoord.toSixFigureString();
+        if (OSCoord.isValid())
+        {
+            double east = OSCoord.getEasting();
+            double north = OSCoord.getNorthing();
+            String OSString = OSCoord.toSixFigureString();
 
             leftList.add(OSString);
             leftList.add(String.format(Locale.getDefault(),
                                        "%1.0f, %1.0f", east, north));
-	}
+        }
 
         leftOverlay.setText(leftList);
         map.invalidate();
@@ -388,42 +418,42 @@ public class Main extends Activity
     @SuppressWarnings("deprecation")
     public void onLocationChanged(Location location)
     {
-	IMapController mapController = map.getController();
+        IMapController mapController = map.getController();
 
-	// Zoom map once
-	if (!zoomed)
-	{
-	    mapController.setZoom(14);
-	    zoomed = true;
-	}
+        // Zoom map once
+        if (!zoomed)
+        {
+            mapController.setZoom(14);
+            zoomed = true;
+        }
 
-	// Get point
-	GeoPoint point = new GeoPoint(location);
+        // Get point
+        GeoPoint point = new GeoPoint(location);
 
-	// Centre map once
-	if (!located)
-	{
-	    mapController.setCenter(point);
-	    located = true;
-	}
+        // Centre map once
+        if (!located)
+        {
+            mapController.setCenter(point);
+            located = true;
+        }
 
-	// Unless tracking
-	else if (mode == TRACK_MODE)
-	    mapController.setCenter(point);
+        // Unless tracking
+        else if (mode == TRACK_MODE)
+            mapController.setCenter(point);
 
-	// Set location
-	simpleLocation.setLocation(point);
+        // Set location
+        simpleLocation.setLocation(point);
 
         if (scrolled)
             map.postDelayed(new Runnable()
+            {
+                // run
+                @Override
+                public void run()
                 {
-                    // run
-                    @Override
-                    public void run()
-                    {
-                        scrolled = false;
-                    }
-                }, LONG_DELAY);
+                    scrolled = false;
+                }
+            }, LONG_DELAY);
 
         else
             showLocation(location);
@@ -432,18 +462,33 @@ public class Main extends Activity
     @Override
     public void onGpsStatusChanged(int event)
     {
-	GpsStatus status = null;
+        GpsStatus status = null;
 
-	switch (event)
-	{
-	case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
-	    status = locationManager.getGpsStatus(null);
+        switch (event)
+        {
+        case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
+            // Check permissions
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            {
+                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED)
+                {
+                    requestPermissions(new String[]
+                    {Manifest.permission.ACCESS_FINE_LOCATION,
+                     Manifest.permission.READ_EXTERNAL_STORAGE,
+                     Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                       REQUEST_PERMS);
+                    return;
+                }
+            }
 
-	    if (statusView != null)
-		statusView.updateStatus(status);
+            status = locationManager.getGpsStatus(null);
 
-	    break;
-	}
+            if (statusView != null)
+                statusView.updateStatus(status);
+
+            break;
+        }
     }
 
     @Override
